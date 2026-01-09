@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TRUTH.EXE – Lie Detector</title>
+
+<style>
+html,body{
+  margin:0;padding:0;background:black;color:#eaeaea;
+  font-family:monospace;height:100%;overflow:hidden;
+}
+
+#matrix{
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  z-index:0;pointer-events:none;
+}
+canvas{display:block;}
+
+#game{
+  position:relative;z-index:2;max-width:480px;margin:auto;
+  padding:20px;text-align:center;
+}
+
+.mask{
+  width:120px;height:120px;margin:20px auto;
+  border-radius:50%;
+  background:radial-gradient(circle at center,#fff 2%,#111 40%,#000 70%);
+  box-shadow:0 0 25px rgba(255,255,255,.2);
+}
+
+h1{font-size:20px;letter-spacing:2px;}
+.case{margin:20px 0;text-align:left;}
+.statement{padding:10px;border-left:3px solid #444;margin-bottom:10px;}
+
+input{
+  width:100%;padding:12px;background:black;color:white;
+  border:1px solid #555;font-size:16px;text-align:center;
+}
+
+#timer{margin-top:10px;color:#ff5555;}
+
+.success{animation:pulse 1.5s infinite;}
+@keyframes pulse{0%{opacity:1;}50%{opacity:.6;}100%{opacity:1;}}
+
+.glitch{animation:glitch .2s infinite;}
+@keyframes glitch{0%{transform:translate(0);}50%{transform:translate(2px,-2px);}100%{transform:translate(-2px,2px);}}
+</style>
+
+<!-- Google AdSense -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXX"
+crossorigin="anonymous"></script>
+
+</head>
+<body>
+
+<canvas id="matrix"></canvas>
+
+<div id="game">
+  <div class="mask"></div>
+  <h1>TRUTH.EXE</h1>
+  <div id="levelInfo"></div>
+  <div class="case" id="case"></div>
+  <input id="input" placeholder="Enter suspect (A / B / C)" autofocus />
+  <div id="timer"></div>
+</div>
+
+<audio id="winSound" src="https://cdn.pixabay.com/audio/2022/03/15/audio_7e5c41a9a0.mp3"></audio>
+<audio id="failSound" src="https://cdn.pixabay.com/audio/2022/10/03/audio_946c87c1a4.mp3"></audio>
+
+<script>
+// MATRIX EFFECT
+const canvas=document.getElementById("matrix");
+const ctx=canvas.getContext("2d");
+canvas.width=innerWidth;canvas.height=innerHeight;
+let letters="0123456789".split("");
+let drops=Array(Math.floor(canvas.width/10)).fill(1);
+function drawMatrix(){
+ ctx.fillStyle="rgba(0,0,0,.05)";
+ ctx.fillRect(0,0,canvas.width,canvas.height);
+ ctx.fillStyle="#0f0";
+ ctx.font="10px monospace";
+ drops.forEach((y,i)=>{
+   let text=letters[Math.floor(Math.random()*letters.length)];
+   ctx.fillText(text,i*10,y*10);
+   if(y*10>canvas.height&&Math.random()>0.975)drops[i]=0;
+   drops[i]++;
+ });
+}
+setInterval(drawMatrix,33);
+
+// GAME LOGIC
+let level=1;
+let lastSafeLevel=1;
+let timer;
+let timeLeft;
+const input=document.getElementById("input");
+const caseBox=document.getElementById("case");
+const levelInfo=document.getElementById("levelInfo");
+
+// CONFIG
+function levelConfig(l){
+  return {range: Math.pow(10,l)*10, time: l===1?30:l===2?60:l===3?90:120};
+}
+
+// GENERATE CASE
+let killer;
+let statements;
+function generateCase(){
+  const suspects=["A","B","C"];
+  killer=suspects[Math.floor(Math.random()*3)];
+  statements={
+    A:`${killer} is lying.`,
+    B:`Exactly one of us is lying.`,
+    C:`${killer} is telling the truth.`
+  };
+}
+
+// RENDER CASE
+function render(){
+  const cfg=levelConfig(level);
+  levelInfo.innerHTML=`LEVEL ${level} | Range 1–${cfg.range}`;
+  caseBox.innerHTML=Object.entries(statements).map(
+    ([k,v])=>`<div class="statement"><b>${k}:</b> ${v}</div>`
+  ).join("");
+  timeLeft=cfg.time;
+  updateTimer();
+}
+
+// TIMER
+function updateTimer(){document.getElementById("timer").innerText=`TIME: ${timeLeft}s`;}
+function startTimer(){
+  clearInterval(timer);
+  timer=setInterval(()=>{
+    timeLeft--;
+    updateTimer();
+    if(timeLeft<=0)lose();
+  },1000);
+}
+
+// SHOW ADS
+function showAd(){
+  const gameDiv = document.getElementById("game");
+  const adDiv = document.createElement("div");
+  adDiv.innerHTML = `
+    <ins class="adsbygoogle"
+         style="display:block; text-align:center; margin:10px 0;"
+         data-ad-client="ca-pub-XXXXXXXXXXXX"
+         data-ad-slot="YYYYYYYYYY"
+         data-ad-format="auto"></ins>
+    <script>
+      (adsbygoogle = window.adsbygoogle || []).push({});
+    </script>`;
+  gameDiv.appendChild(adDiv);
+}
+
+// WIN
+function win(){
+  clearInterval(timer);
+  document.body.classList.add("success");
+  document.getElementById("winSound").play();
+  setTimeout(()=>{
+    document.body.classList.remove("success");
+    showAd(); // <-- show ad after win
+    lastSafeLevel=level;
+    level++;
+    start();
+  },2000);
+}
+
+// LOSE
+function lose(){
+  clearInterval(timer);
+  document.body.classList.add("glitch");
+  document.getElementById("failSound").play();
+  setTimeout(()=>{
+    document.body.classList.remove("glitch");
+    showAd(); // <-- show ad after lose
+    level=lastSafeLevel;
+    start();
+  },2000);
+}
+
+// PLAYER INPUT
+input.addEventListener("keydown",e=>{
+  if(e.key==="Enter"){
+    const val=input.value.toUpperCase().trim();
+    input.value="";
+    if(val==="67"){ // secret matrix event
+      let t=Date.now();
+      let flood=setInterval(()=>{
+        drawMatrix();
+        if(Date.now()-t>10000)clearInterval(flood);
+      },30);
+    }
+    val===killer?win():lose();
+  }
+});
+
+// START GAME
+function start(){generateCase();render();startTimer();}
+start();
+</script>
+</body>
+</html>
