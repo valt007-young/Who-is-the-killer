@@ -10,46 +10,23 @@ html,body{
   margin:0;padding:0;background:black;color:#eaeaea;
   font-family:monospace;height:100%;overflow:hidden;
 }
-
-#matrix{
-  position:fixed;top:0;left:0;width:100%;height:100%;
-  z-index:0;pointer-events:none;
-}
+#matrix{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;}
 canvas{display:block;}
-
-#game{
-  position:relative;z-index:2;max-width:480px;margin:auto;
-  padding:20px;text-align:center;
-}
-
-.mask{
-  width:120px;height:120px;margin:20px auto;
-  border-radius:50%;
-  background:radial-gradient(circle at center,#fff 2%,#111 40%,#000 70%);
-  box-shadow:0 0 25px rgba(255,255,255,.2);
-}
-
+#game{position:relative;z-index:2;max-width:480px;margin:auto;padding:20px;text-align:center;}
+.mask{width:120px;height:120px;margin:20px auto;border-radius:50%;background:radial-gradient(circle at center,#fff 2%,#111 40%,#000 70%);box-shadow:0 0 25px rgba(255,255,255,.2);}
 h1{font-size:20px;letter-spacing:2px;}
 .case{margin:20px 0;text-align:left;}
 .statement{padding:10px;border-left:3px solid #444;margin-bottom:10px;}
-
-input{
-  width:100%;padding:12px;background:black;color:white;
-  border:1px solid #555;font-size:16px;text-align:center;
-}
-
+input{width:100%;padding:12px;background:black;color:white;border:1px solid #555;font-size:16px;text-align:center;}
 #timer{margin-top:10px;color:#ff5555;}
-
 .success{animation:pulse 1.5s infinite;}
 @keyframes pulse{0%{opacity:1;}50%{opacity:.6;}100%{opacity:1;}}
-
 .glitch{animation:glitch .2s infinite;}
 @keyframes glitch{0%{transform:translate(0);}50%{transform:translate(2px,-2px);}100%{transform:translate(-2px,2px);}}
 </style>
 
 <!-- Google AdSense -->
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXX"
-crossorigin="anonymous"></script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXX" crossorigin="anonymous"></script>
 
 </head>
 <body>
@@ -98,12 +75,8 @@ const input=document.getElementById("input");
 const caseBox=document.getElementById("case");
 const levelInfo=document.getElementById("levelInfo");
 
-// CONFIG
-function levelConfig(l){
-  return {range: Math.pow(10,l)*10, time: l===1?30:l===2?60:l===3?90:120};
-}
+function levelConfig(l){return {range: Math.pow(10,l)*10, time: l===1?30:l===2?60:l===3?90:120};}
 
-// GENERATE CASE
 let killer;
 let statements;
 function generateCase(){
@@ -116,18 +89,14 @@ function generateCase(){
   };
 }
 
-// RENDER CASE
 function render(){
   const cfg=levelConfig(level);
   levelInfo.innerHTML=`LEVEL ${level} | Range 1–${cfg.range}`;
-  caseBox.innerHTML=Object.entries(statements).map(
-    ([k,v])=>`<div class="statement"><b>${k}:</b> ${v}</div>`
-  ).join("");
+  caseBox.innerHTML=Object.entries(statements).map(([k,v])=>`<div class="statement"><b>${k}:</b> ${v}</div>`).join("");
   timeLeft=cfg.time;
   updateTimer();
 }
 
-// TIMER
 function updateTimer(){document.getElementById("timer").innerText=`TIME: ${timeLeft}s`;}
 function startTimer(){
   clearInterval(timer);
@@ -138,11 +107,11 @@ function startTimer(){
   },1000);
 }
 
-// SHOW ADS
+// SHOW AD
 function showAd(){
-  const gameDiv = document.getElementById("game");
-  const adDiv = document.createElement("div");
-  adDiv.innerHTML = `
+  const gameDiv=document.getElementById("game");
+  const adDiv=document.createElement("div");
+  adDiv.innerHTML=`
     <ins class="adsbygoogle"
          style="display:block; text-align:center; margin:10px 0;"
          data-ad-client="ca-pub-XXXXXXXXXXXX"
@@ -161,7 +130,7 @@ function win(){
   document.getElementById("winSound").play();
   setTimeout(()=>{
     document.body.classList.remove("success");
-    showAd(); // <-- show ad after win
+    showAd(); // show ad
     lastSafeLevel=level;
     level++;
     start();
@@ -175,7 +144,7 @@ function lose(){
   document.getElementById("failSound").play();
   setTimeout(()=>{
     document.body.classList.remove("glitch");
-    showAd(); // <-- show ad after lose
+    showAd(); // show ad
     level=lastSafeLevel;
     start();
   },2000);
@@ -201,5 +170,7 @@ input.addEventListener("keydown",e=>{
 function start(){generateCase();render();startTimer();}
 start();
 </script>
+
 </body>
 </html>
+
